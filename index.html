@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>نموذج بلاغ</title>
+<style>
+  :root{
+    --ink:#10202B; --ink-2:#1A3140;
+    --surface:#F4F6F5; --card:#FFFFFF; --paper:#FCFBF7;
+    --line:#E2E6E4; --line-2:#D3DAD8;
+    --steel:#2C7A9B; --steel-d:#236782;
+    --amber:#C97E18; --amber-soft:#FBF1DE;
+    --green:#2E7D5B; --green-soft:#E6F2EC;
+    --muted:#5C6B73; --text:#16242C;
+    --r:14px; --r-sm:10px;
+    font-family:-apple-system,system-ui,'SF Arabic','Segoe UI',Tahoma,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--surface);color:var(--text)}
+  body{padding:0 0 120px;line-height:1.7;font-size:16px}
+  .wrap{max-width:560px;margin:0 auto;padding:14px}
+
+  /* letterhead */
+  .head{background:linear-gradient(160deg,var(--ink),var(--ink-2));color:#EAF1F4;border-radius:var(--r);
+    padding:18px 18px 16px;box-shadow:0 6px 22px rgba(16,32,43,.18);position:relative;overflow:hidden}
+  .head::before{content:"";position:absolute;inset:0;background:
+    repeating-linear-gradient(135deg,transparent 0 22px,rgba(255,255,255,.025) 22px 23px)}
+  .head .crest{position:relative;font-size:12px;letter-spacing:.5px;color:#9FC2D1;margin-bottom:10px;
+    display:flex;align-items:center;gap:8px}
+  .head .crest b{width:6px;height:6px;border-radius:50%;background:var(--amber);display:inline-block}
+  .head h1{position:relative;font-size:16px;font-weight:800;line-height:1.5}
+  .head .lines{position:relative;font-size:13.5px;font-weight:500;color:#C7D8E0;margin-top:6px}
+  .head .lines span{display:block}
+  .head-dyn{position:relative}
+  .head-dyn .ttl{font-size:16px;font-weight:800;line-height:1.5;margin-bottom:6px}
+  .head-dyn .sub{font-size:13.5px;font-weight:500;color:#C7D8E0;line-height:1.9}
+  .head-empty{position:relative;font-size:13px;font-weight:500;color:#9FC2D1;line-height:1.7}
+  .head-dyn:empty + .head-empty{display:block}
+  .head-dyn:not(:empty) + .head-empty{display:none}
+  .org.empty{display:none}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:14px}
+  .grp{margin-bottom:18px}
+  .grp:last-child{margin-bottom:0}
+  label.lab{display:block;font-weight:700;font-size:14.5px;margin-bottom:8px;color:var(--ink)}
+  .hint{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:5px}
+
+  input[type=text],textarea{width:100%;font-family:inherit;font-size:16px;color:var(--text);
+    background:#fff;border:1.5px solid var(--line-2);border-radius:var(--r-sm);padding:11px 13px;outline:none;transition:.15s}
+  input[type=text]:focus,textarea:focus{border-color:var(--steel);box-shadow:0 0 0 3px rgba(44,122,155,.14)}
+  textarea{resize:vertical;min-height:52px;line-height:1.6}
+  .two{display:flex;gap:10px}
+  .two>div{flex:1;min-width:0}
+  .sep{display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--muted);
+    padding-bottom:11px;flex:0 0 auto}
+  input.locked{background:#EEF1F0;color:var(--muted);border-style:dashed;cursor:not-allowed;text-align:center}
+  .hide{display:none!important}
+  .cableRow{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+  .cableRow input{flex:1;min-width:0}
+  .rowDel{flex:0 0 40px;height:44px;border:1.5px solid var(--line-2);background:#fff;border-radius:var(--r-sm);color:#C2453A;font-size:20px;font-weight:700;cursor:pointer;line-height:1}
+  .rowDel:active{transform:scale(.94)}
+  .addrow{width:100%;border:1.5px dashed var(--steel);background:#EAF4F8;border-radius:var(--r-sm);padding:11px;color:var(--steel-d);font-weight:800;font-size:14px;cursor:pointer;margin-top:2px}
+  .addrow:active{transform:scale(.98)}
+
+  /* segmented chips */
+  .seg{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{flex:1 1 auto;min-width:30%;text-align:center;cursor:pointer;user-select:none;
+    border:1.5px solid var(--line-2);border-radius:var(--r-sm);padding:10px 8px;font-weight:700;font-size:14.5px;
+    color:var(--ink);background:#fff;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .chip:active{transform:scale(.97)}
+  .chip .ck{width:17px;height:17px;border-radius:5px;border:1.5px solid var(--line-2);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;transition:.15s}
+  .chip.on{border-color:var(--steel);background:#EAF4F8;color:var(--steel-d)}
+  .chip.on .ck{background:var(--steel);border-color:var(--steel)}
+  .chip.on .ck::after{content:"✓"}
+  .chip[data-tone=amber].on{border-color:var(--amber);background:var(--amber-soft);color:#9A5E08}
+  .chip[data-tone=amber].on .ck{background:var(--amber);border-color:var(--amber)}
+  .chip[data-tone=green].on{border-color:var(--green);background:var(--green-soft);color:#1F5E41}
+  .chip[data-tone=green].on .ck{background:var(--green);border-color:var(--green)}
+
+  .switchrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 13px}
+  .switchrow .t{font-weight:700;font-size:14px}
+  .sw{position:relative;width:48px;height:28px;flex:0 0 auto;cursor:pointer}
+  .sw input{opacity:0;width:0;height:0;position:absolute}
+  .sw .tr{position:absolute;inset:0;background:#C9D2D0;border-radius:30px;transition:.2s}
+  .sw .kn{position:absolute;top:3px;right:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .sw input:checked + .tr{background:var(--steel)}
+  .sw input:checked + .tr + .kn{right:23px}
+
+  #followup.hide{display:none}
+
+  /* preview memo */
+  .memo-head{display:flex;align-items:center;justify-content:space-between;margin:22px 4px 8px}
+  .memo-head h2{font-size:15px;font-weight:800;color:var(--ink)}
+  .memo-head .badge{font-size:12px;font-weight:700;color:var(--steel-d);background:#EAF4F8;
+    border:1px solid #CFE4EC;padding:3px 9px;border-radius:20px}
+  .memo{background:var(--paper);border:1px solid var(--line-2);border-radius:var(--r);
+    padding:20px 18px;box-shadow:0 4px 14px rgba(16,32,43,.07);position:relative}
+  .memo::after{content:"";position:absolute;top:0;right:0;width:5px;height:100%;
+    background:linear-gradient(var(--amber),var(--steel));border-radius:0 var(--r) var(--r) 0}
+  .memo .org{font-weight:800;font-size:14px;color:var(--ink);line-height:1.9;margin-bottom:14px;
+    border-bottom:1px dashed var(--line-2);padding-bottom:12px}
+  .memo .org span{display:block}
+  .memo .body{font-size:15.5px;line-height:2.05;white-space:pre-wrap;color:#1B2A33;font-weight:500}
+
+  /* sticky actions */
+  .bar{position:fixed;bottom:0;right:0;left:0;background:rgba(255,255,255,.92);
+    backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:12px 14px;z-index:20}
+  .bar .inner{max-width:560px;margin:0 auto;display:flex;gap:10px}
+  .btn{flex:1;border:none;border-radius:var(--r-sm);padding:14px 10px;font-family:inherit;
+    font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+  .btn:active{transform:scale(.97)}
+  .btn.wa{background:#1FA855;color:#fff}
+  .btn.cp{background:var(--ink);color:#fff}
+  .btn.rs{flex:0 0 52px;background:#fff;border:1.5px solid var(--line-2);color:var(--muted);font-size:18px}
+  .btn svg{width:19px;height:19px}
+  .toast{position:fixed;bottom:88px;right:50%;transform:translateX(50%) translateY(20px);
+    background:var(--green);color:#fff;font-weight:700;font-size:14px;padding:11px 20px;border-radius:30px;
+    opacity:0;pointer-events:none;transition:.25s;z-index:40;box-shadow:0 6px 20px rgba(46,125,91,.4)}
+  .toast.show{opacity:1;transform:translateX(50%) translateY(0)}
+  .tip{font-size:12.5px;color:var(--muted);text-align:center;margin-top:14px;font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div id="headLines" class="head-dyn"></div>
+    <div id="headEmpty" class="head-empty">أدخِل ترويسة مكتبك من «إعدادات الترويسة» بالأسفل لتظهر هنا وتُحفظ تلقائياً</div>
+  </div>
+
+  <div class="card">
+
+    <div class="grp">
+      <label class="lab">ترويسة البلاغ <span style="font-weight:500;color:var(--muted)">(تُحفظ على جهازك)</span></label>
+      <textarea id="headerInput" rows="5" placeholder="اكتب ترويسة مكتبك — كل جهة في سطر مستقل"></textarea>
+      <div class="hint">تُحفظ تلقائياً على هذا الجهاز فقط وتظهر كل مرة تفتح الرابط. أول سطر يظهر كعنوان رئيسي.</div>
+    </div>
+
+    <div class="grp">
+      <label class="lab">المُخاطَب</label>
+      <input type="text" id="addrInput" placeholder="السيد / .........   المحترم">
+      <div class="hint">يُحفظ على جهازك ويظهر تحت الترويسة.</div>
+    </div>
+
+    <div class="grp">
+      <label class="lab">التحية</label>
+      <input type="text" id="greetInput" value="تحية طيبة وبعد،">
+      <div class="hint">جملة ثابتة محفوظة — تظهر تحت المُخاطَب. عدّلها لو احتجت.</div>
+    </div>
+
+    <div class="grp">
+      <label class="lab">اسم الشركة <span style="font-weight:500;color:var(--muted)">(تُحفظ على جهازك)</span></label>
+      <input type="text" id="coInput" placeholder="اسم الشركة">
+      <div class="hint">تُستخدم في بلاغ سرقة الكيابل، وتُحفظ على جهازك فقط.</div>
+    </div>
+
+    <div class="grp" style="margin-bottom:0">
+      <label class="lab">اسم الدورية <span style="font-weight:500;color:var(--muted)">(تُحفظ على جهازك)</span></label>
+      <input type="text" id="patrolInput" placeholder="مثال: ...........">
+      <div class="hint">تظهر في البلاغ بصيغة «وتم توجه دورية ...»، وتُحفظ على جهازك فقط.</div>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <div class="grp">
+      <label class="lab">نوع البلاغ</label>
+      <div class="seg" id="reportTypeSeg">
+        <div class="chip" data-val="حالة وفاة"><span class="ck"></span>حالة وفاة</div>
+        <div class="chip" data-tone="amber" data-val="حريق"><span class="ck"></span>حريق</div>
+        <div class="chip" data-val="سرقة كيابل"><span class="ck"></span>سرقة كيابل</div>
+        <div class="chip" data-val="إصابة عامل"><span class="ck"></span>إصابة عامل</div>
+        <div class="chip" data-val="أخرى"><span class="ck"></span>أخرى</div>
+        <div class="chip on" data-tone="amber" data-val="تسرب"><span class="ck"></span>تسرب</div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <label class="lab">الموضوع <span style="font-weight:500;color:var(--muted)">(اختياري)</span></label>
+      <input type="text" id="subject" placeholder="مثال: بلاغ تسرب نفط">
+    </div>
+
+    <div class="grp">
+      <label class="lab">اليوم والتاريخ</label>
+      <input type="text" id="day" placeholder="اليوم" style="margin-bottom:10px">
+      <div class="two">
+        <div><input type="text" id="dd" placeholder="يوم" inputmode="numeric"></div>
+        <div class="sep">/</div>
+        <div><input type="text" id="mm2" placeholder="شهر" inputmode="numeric"></div>
+        <div class="sep">/</div>
+        <div><input type="text" id="yyyy" class="locked" readonly></div>
+      </div>
+      <div class="hint">السنة مثبّتة — عدّل اليوم والشهر فقط.</div>
+    </div>
+
+    <div class="grp">
+      <label class="lab">ساعة الإبلاغ</label>
+      <input type="text" id="time" placeholder="مثال: ٠٩:٤٥">
+    </div>
+
+    <div class="grp">
+      <label class="lab">المُبلِّغ من قسم العمليات</label>
+      <div class="two">
+        <div><input type="text" id="repRank" placeholder="الرتبة"></div>
+        <div class="sep">/</div>
+        <div><input type="text" id="repName" placeholder="الاسم"></div>
+      </div>
+      <div class="hint">مثال: رقيب أول</div>
+    </div>
+
+    <div class="grp">
+      <label class="lab">المنطقة</label>
+      <input type="text" id="area" placeholder="اسم المنطقة">
+    </div>
+
+    <div class="grp">
+      <label class="lab">أثناء الوصول</label>
+      <div class="seg" id="seenSeg" style="margin-bottom:12px">
+        <div class="chip on" data-val="تم"><span class="ck"></span>تم مشاهدة</div>
+        <div class="chip" data-tone="amber" data-val="لا"><span class="ck"></span>لم يتم مشاهدة أحد</div>
+      </div>
+      <div id="seenBox" class="two">
+        <div><input type="text" id="witTitle" placeholder="الصفة / الرتبة"></div>
+        <div class="sep">/</div>
+        <div><input type="text" id="witName" placeholder="الاسم"></div>
+      </div>
+      <div id="emgBox" class="hide">
+        <div class="hint" style="margin-bottom:8px">تم الاتصال على طوارئ النفط:</div>
+        <div class="two">
+          <div><input type="text" id="emgJob" placeholder="المهنة"></div>
+          <div class="sep">/</div>
+          <div><input type="text" id="emgName" placeholder="الاسم"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="leakFields">
+      <div class="grp">
+        <label class="lab">نوع التسرب</label>
+        <div class="seg" id="typeSeg">
+          <div class="chip" data-tone="amber" data-val="نفط"><span class="ck"></span>نفط</div>
+          <div class="chip" data-tone="amber" data-val="نفط وماء"><span class="ck"></span>نفط وماء</div>
+          <div class="chip" data-tone="amber" data-val="ماء"><span class="ck"></span>ماء</div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <label class="lab">كمية التسرب</label>
+        <div class="seg" id="qtySeg">
+          <div class="chip" data-val="بسيطة"><span class="ck"></span>بسيطة</div>
+          <div class="chip" data-val="متوسطة"><span class="ck"></span>متوسطة</div>
+          <div class="chip" data-tone="amber" data-val="شديدة"><span class="ck"></span>شديدة</div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <label class="lab">سبب التسرب <span style="font-weight:500;color:var(--muted)">(تقدر تختار أكثر من سبب)</span></label>
+        <div class="seg" id="causeSeg" style="margin-bottom:10px">
+          <div class="chip" data-val="تآكل في البايب"><span class="ck"></span>تآكل في البايب</div>
+          <div class="chip" data-val="تآكل في الفلنجة"><span class="ck"></span>تآكل في الفلنجة</div>
+        </div>
+        <input type="text" id="causeOther" placeholder="سبب آخر — اكتبه هنا (اختياري)">
+      </div>
+
+      <div class="grp">
+        <label class="lab">حالة العزل</label>
+        <div class="seg" id="isoSeg">
+          <div class="chip" data-tone="amber" data-val="جاري"><span class="ck"></span>جاري العزل</div>
+          <div class="chip" data-tone="green" data-val="تم"><span class="ck"></span>تم العزل</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cableFields" class="hide">
+      <div class="grp">
+        <label class="lab">رقم العين</label>
+        <input type="text" id="cWell" placeholder="رقم العين">
+        <div class="hint">يُكتب بالإنجليزي (حروف وأرقام) — لا يتحوّل للعربي.</div>
+      </div>
+      <div class="grp">
+        <label class="lab">الكيابل المسروقة — المجموعة الأولى</label>
+        <div id="cableRows"></div>
+        <button type="button" id="addCableRow" class="addrow">+ إضافة كيبل آخر</button>
+      </div>
+      <div class="grp">
+        <label class="lab">تابعين لـ (المجموعة الأولى)</label>
+        <textarea id="cOwner" rows="2" placeholder="مثال: اسم الشركة"></textarea>
+      </div>
+      <div class="grp">
+        <label class="lab">الكيابل المسروقة — المجموعة الثانية <span style="font-weight:500;color:var(--muted)">(اختياري)</span></label>
+        <div class="two">
+          <div><input type="text" id="cN2" placeholder="العدد" inputmode="numeric"></div>
+          <div><input type="text" id="cL2" placeholder="الطول (متر)" inputmode="numeric"></div>
+          <div><input type="text" id="cT2" placeholder="السمك (ملم)" inputmode="numeric"></div>
+        </div>
+      </div>
+      <div class="grp">
+        <label class="lab">تابعين لـ (المجموعة الثانية)</label>
+        <textarea id="cOwner2" rows="2" placeholder="مثال: اسم الشركة"></textarea>
+      </div>
+      <div class="grp">
+        <label class="lab">ساعة اكتشاف السرقة</label>
+        <input type="text" id="cDisc" placeholder="مثال: ٠٢:٣٠">
+      </div>
+      <div class="grp">
+        <label class="lab">آخر مرور على العين (اليوم والتاريخ)</label>
+        <input type="text" id="cLast" placeholder="مثال: الخميس ١٨/٦/٢٠٢٦">
+      </div>
+      <div class="grp" style="margin-bottom:0">
+        <label class="lab">الممثل القانوني للشركة / تفاصيل التواصل</label>
+        <textarea id="cLegal" rows="4" placeholder="اكتب تفاصيل الاتصال بالممثل القانوني وما أفاد به..."></textarea>
+      </div>
+    </div>
+
+    <div id="otherFields" class="hide">
+      <div class="grp">
+        <label class="lab">نوع البلاغ (أخرى)</label>
+        <textarea id="otherDetails" rows="3" placeholder="اكتب نوع البلاغ... مثال: إضراب، تجمهر عمالي، عطل"></textarea>
+      </div>
+    </div>
+
+    <div class="grp">
+      <div class="switchrow">
+        <span class="t">إضافة فقرة المتابعة</span>
+        <label class="sw"><input type="checkbox" id="fuToggle"><span class="tr"></span><span class="kn"></span></label>
+      </div>
+      <div id="followup" class="hide" style="margin-top:12px">
+        <div class="grp" style="margin-bottom:12px">
+          <label class="lab">ساعة المتابعة</label>
+          <input type="text" id="fuTime" value="١١:٠٠">
+        </div>
+        <div class="grp" style="margin-bottom:0">
+          <label class="lab">الاتصال على</label>
+          <div class="two">
+            <div><input type="text" id="fuC1" placeholder="الاسم / الرتبة"></div>
+            <div class="sep">/</div>
+            <div><input type="text" id="fuC2" placeholder="جهة أو اسم آخر"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grp" style="margin-bottom:0">
+      <div class="switchrow">
+        <span class="t">تحويل الأرقام إلى عربية (١٢٣)</span>
+        <label class="sw"><input type="checkbox" id="arToggle" checked><span class="tr"></span><span class="kn"></span></label>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="memo-head">
+    <h2>معاينة البلاغ</h2>
+    <span class="badge">جاهز للإرسال</span>
+  </div>
+  <div class="memo">
+    <div class="org" id="orgLines"></div>
+    <div class="addr" id="outAddr" style="font-weight:700;color:var(--ink);margin-bottom:14px"></div>
+    <div class="greet" id="outGreet" style="font-weight:600;color:#1B2A33;margin-bottom:16px"></div>
+    <div class="subj" id="outSubj" style="font-weight:800;color:var(--ink);margin-bottom:16px"></div>
+    <div class="body" id="out"></div>
+  </div>
+
+  <div class="tip">اضغط «واتساب» لفتح المحادثة مع النص جاهز، أو «نسخ» للصقه يدوياً.</div>
+</div>
+
+<div class="bar">
+  <div class="inner">
+    <button class="btn rs" id="resetBtn" title="تفريغ">↺</button>
+    <button class="btn cp" id="copyBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+      نسخ
+    </button>
+    <button class="btn wa" id="waBtn">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1012 2zm5.8 14.2c-.2.7-1.4 1.3-2 1.4-.5.1-1.2.1-1.9-.1-.4-.1-1-.3-1.7-.6-3-1.3-4.9-4.3-5.1-4.5-.1-.2-1.2-1.5-1.2-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.3 0 .5l-.3.5-.3.4c-.1.1-.3.3-.1.5.1.3.7 1.1 1.5 1.7 1 .9 1.8 1.1 2 1.2.2.1.4.1.5-.1l.7-.8c.2-.2.3-.2.6-.1l1.8.9c.3.1.4.2.5.3.1.2.1.7-.1 1.3z"/></svg>
+      واتساب
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast">تم النسخ ✓</div>
+
+<script>
+(function(){
+  var W='٠١٢٣٤٥٦٧٨٩';
+  function ar(s){return String(s).replace(/[0-9]/g,function(d){return W[+d]});}
+  function en(s){return String(s).replace(/[٠-٩]/g,function(d){return W.indexOf(d)});}
+
+  // ---- header (letterhead) persistence ----
+  var HKEY='leakReportHeader_v1';
+  var AKEY='leakReportAddr_v1';
+  var GKEY='leakReportGreet_v1';
+  var CKEY='leakReportCo_v1';
+  var PKEY='leakReportPatrol_v1';
+  var headerInput=document.getElementById('headerInput');
+  var addrInput=document.getElementById('addrInput');
+  var greetInput=document.getElementById('greetInput');
+  var coInput=document.getElementById('coInput');
+  var patrolInput=document.getElementById('patrolInput');
+  var headLines=document.getElementById('headLines');
+  var orgLines=document.getElementById('orgLines');
+
+  function getHeaderLines(){
+    return headerInput.value.split('\n').map(function(s){return s.trim()}).filter(Boolean);
+  }
+  function saveHeader(){
+    try{
+      localStorage.setItem(HKEY, headerInput.value);
+      localStorage.setItem(AKEY, addrInput.value);
+      localStorage.setItem(GKEY, greetInput.value);
+      localStorage.setItem(CKEY, coInput.value);
+      localStorage.setItem(PKEY, patrolInput.value);
+    }catch(e){}
+  }
+  function loadHeader(){
+    try{ var v=localStorage.getItem(HKEY); if(v!=null) headerInput.value=v; }catch(e){}
+    try{ var a=localStorage.getItem(AKEY); if(a!=null) addrInput.value=a; }catch(e){}
+    try{ var g=localStorage.getItem(GKEY); if(g!=null) greetInput.value=g; }catch(e){}
+    try{ var c=localStorage.getItem(CKEY); if(c!=null) coInput.value=c; }catch(e){}
+    try{ var p=localStorage.getItem(PKEY); if(p!=null) patrolInput.value=p; }catch(e){}
+  }
+  function syncHeader(){
+    var lines=getHeaderLines();
+    // top banner
+    headLines.innerHTML='';
+    lines.forEach(function(t,i){
+      var d=document.createElement('div');
+      d.className = i===0 ? 'ttl' : 'sub';
+      d.textContent=t; headLines.appendChild(d);
+    });
+    // preview memo
+    orgLines.innerHTML='';
+    lines.forEach(function(t){
+      var s=document.createElement('span'); s.textContent=t; orgLines.appendChild(s);
+    });
+    orgLines.classList.toggle('empty', lines.length===0);
+  }
+  loadHeader();
+  syncHeader();
+  function onSettingsInput(){ saveHeader(); syncHeader(); render(); }
+  headerInput.addEventListener('input',onSettingsInput);
+  addrInput.addEventListener('input',onSettingsInput);
+  greetInput.addEventListener('input',onSettingsInput);
+  coInput.addEventListener('input',onSettingsInput);
+  patrolInput.addEventListener('input',onSettingsInput);
+
+  // defaults: date + time
+  var days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var mons=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var now=new Date();
+  var dayEl=document.getElementById('day');
+  var ddEl=document.getElementById('dd');
+  var mmEl=document.getElementById('mm2');
+  var yyEl=document.getElementById('yyyy');
+  dayEl.value=days[now.getDay()];
+  ddEl.value=ar(now.getDate());
+  mmEl.value=ar(now.getMonth()+1);
+  yyEl.value=ar(now.getFullYear());
+  var hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('time').value=ar(hh+':'+mm);
+
+  // single-select segments
+  function singleSeg(id){
+    var box=document.getElementById(id);
+    box.addEventListener('click',function(e){
+      var c=e.target.closest('.chip'); if(!c)return;
+      [].forEach.call(box.querySelectorAll('.chip'),function(x){x.classList.toggle('on',x===c)});
+      render();
+    });
+    box.getVal=function(){var on=box.querySelector('.chip.on');return on?on.dataset.val:''};
+    return box;
+  }
+  // multi-select segment
+  function multiSeg(id){
+    var box=document.getElementById(id);
+    box.addEventListener('click',function(e){
+      var c=e.target.closest('.chip'); if(!c)return;
+      c.classList.toggle('on'); render();
+    });
+    box.getVals=function(){return [].map.call(box.querySelectorAll('.chip.on'),function(x){return x.dataset.val})};
+    return box;
+  }
+  var typeSeg=singleSeg('typeSeg');
+  var qtySeg=singleSeg('qtySeg');
+  var isoSeg=singleSeg('isoSeg');
+  var causeSeg=multiSeg('causeSeg');
+
+  // report type selector + field-block visibility
+  var reportTypeSeg=singleSeg('reportTypeSeg');
+  var leakFields=document.getElementById('leakFields');
+  var cableFields=document.getElementById('cableFields');
+  var otherFields=document.getElementById('otherFields');
+  function updateTypeVisibility(){
+    var rt=reportTypeSeg.getVal()||'تسرب';
+    leakFields.classList.toggle('hide', rt!=='تسرب');
+    cableFields.classList.toggle('hide', rt!=='سرقة كيابل');
+    otherFields.classList.toggle('hide', rt!=='أخرى');
+  }
+  document.getElementById('reportTypeSeg').addEventListener('click',updateTypeVisibility);
+  updateTypeVisibility();
+
+  // repeatable cable rows (group 1)
+  var cableRows=document.getElementById('cableRows');
+  function makeCableRow(){
+    var row=document.createElement('div');
+    row.className='cableRow';
+    row.innerHTML='<input type="text" class="cN" placeholder="العدد" inputmode="numeric">'+
+                  '<input type="text" class="cL" placeholder="الطول م" inputmode="numeric">'+
+                  '<input type="text" class="cT" placeholder="السمك ملم" inputmode="numeric">'+
+                  '<button type="button" class="rowDel" title="حذف">×</button>';
+    return row;
+  }
+  function addCableRow(){ cableRows.appendChild(makeCableRow()); }
+  function resetCableRows(){ cableRows.innerHTML=''; addCableRow(); }
+  document.getElementById('addCableRow').addEventListener('click',function(){ addCableRow(); render(); });
+  cableRows.addEventListener('input',function(){ render(); });
+  cableRows.addEventListener('click',function(e){
+    var b=e.target.closest('.rowDel'); if(!b)return;
+    var rows=cableRows.querySelectorAll('.cableRow');
+    if(rows.length>1){ b.closest('.cableRow').remove(); }
+    else { b.closest('.cableRow').querySelectorAll('input').forEach(function(i){i.value=''}); }
+    render();
+  });
+  resetCableRows();
+
+  // arrival: seen person vs nobody at site
+  var seenSeg=singleSeg('seenSeg');
+  var seenBox=document.getElementById('seenBox');
+  var emgBox=document.getElementById('emgBox');
+  document.getElementById('seenSeg').addEventListener('click',function(){
+    var notSeen=seenSeg.getVal()==='لا';
+    seenBox.classList.toggle('hide',notSeen);
+    emgBox.classList.toggle('hide',!notSeen);
+  });
+
+  // follow-up toggle
+  var fuT=document.getElementById('fuToggle'), fuBox=document.getElementById('followup');
+  fuT.addEventListener('change',function(){fuBox.classList.toggle('hide',!fuT.checked);render()});
+
+  var arT=document.getElementById('arToggle');
+  arT.addEventListener('change',render);
+
+  function v(id){return document.getElementById(id).value.trim();}
+  function dash(s,ph){return s? s : '..........';}
+
+  function buildCause(){
+    var arr=causeSeg.getVals();
+    var other=v('causeOther'); if(other)arr.push(other);
+    if(!arr.length)return '..........';
+    return arr.join(' و');
+  }
+
+  function render(){
+    var useAr=arT.checked;
+    var fmt=function(s){return useAr?ar(s):en(s);}; // toggle digit style on user fields
+
+    var day=fmt(v('day')||'..........');
+    var date=fmt((v('dd')||'..')+'/'+(v('mm2')||'..')+'/'+(v('yyyy')||'....'));
+    var time=fmt(v('time')||'..........');
+    var repRank=dash(v('repRank'));
+    var repName=dash(v('repName'));
+    var area=dash(v('area'));
+    var witTitle=dash(v('witTitle'));
+    var witName=dash(v('witName'));
+
+    var arrival;
+    if(seenSeg.getVal()==='لا'){
+      var emgJob=dash(v('emgJob')), emgName=dash(v('emgName'));
+      arrival='وأثناء الوصول لم يتم مشاهدة أحد بالموقع وتم الاتصال على طوارئ النفط '+emgJob+' / '+emgName+' وأفادنا';
+    }else{
+      arrival='وأثناء الوصول تم مشاهدة '+witTitle+' / '+witName+' وتم الاستفسار منه حيث أفادنا';
+    }
+
+    var rt=reportTypeSeg.getVal()||'تسرب';
+    var headPhrase, tail;
+
+    if(rt==='تسرب'){
+      var type=typeSeg.getVal()||'..........';
+      var qty=qtySeg.getVal()||'..........';
+      var cause=buildCause();
+      var isoSel=isoSeg.getVal();
+      var iso = isoSel==='تم' ? 'وتم عزل التسرب' : (isoSel==='جاري' ? 'وجاري عزل التسرب' : 'و..........');
+      headPhrase='تسرب '+type;
+      tail=' بوجود تسرب '+type+' وكمية التسرب '+qty+' وسبب التسرب '+cause+' '+iso+'.';
+    }else if(rt==='سرقة كيابل'){
+      var cWell=v('cWell')||'..........';            // English only — never converted
+      var cOwner=dash(v('cOwner'));
+      var cDisc=fmt(v('cDisc')||'..........');
+      var cLast=fmt(v('cLast')||'..........');
+      var cLegal=dash(v('cLegal'));
+      headPhrase='سرقة كيابل';
+
+      // group 1 — repeatable cable specs, then one owner
+      var parts1=[];
+      cableRows.querySelectorAll('.cableRow').forEach(function(r){
+        var n=r.querySelector('.cN').value.trim();
+        var l=r.querySelector('.cL').value.trim();
+        var th=r.querySelector('.cT').value.trim();
+        if(!n && !l && !th) return;
+        n=fmt(n||'....'); l=fmt(l||'....'); th=fmt(th||'....');
+        if(parts1.length===0) parts1.push('وعدد الكيابل ('+n+') بطول ('+l+') متر السمك ('+th+') ملم');
+        else parts1.push('وعدد ('+n+') كيبل بطول ('+l+') متر السمك ('+th+') ملم');
+      });
+      if(parts1.length===0) parts1.push('وعدد الكيابل ('+fmt('....')+') بطول ('+fmt('....')+') متر السمك ('+fmt('....')+') ملم');
+
+      tail=' بوجود سرقة كيابل من العين رقم '+cWell+' '+parts1.join(' ')+' تابعين '+cOwner;
+
+      // group 2 — single spec + owner (optional)
+      if(v('cN2')||v('cL2')||v('cT2')||v('cOwner2')){
+        var cN2=fmt(v('cN2')||'....'), cL2=fmt(v('cL2')||'....'), cT2=fmt(v('cT2')||'....');
+        var cOwner2=dash(v('cOwner2'));
+        tail+=' وعدد ('+cN2+') كيبل بطول ('+cL2+') متر السمك ('+cT2+') ملم تابعين '+cOwner2;
+      }
+      tail+=' وتم اكتشاف السرقة في تمام الساعة '+cDisc+' وآخر مرور على العين '+cLast+'.';
+      tail+=' وتم الاستفسار هل يريدون تسجيل قضية وأفادنا بأنه سوف يتم التواصل مع الإدارة، '+
+            'ونفيد سيادتكم بأنه تم الاتصال على الممثل القانوني لـ '+dash(coInput.value.trim())+' '+cLegal+'.';
+    }else if(rt==='أخرى'){
+      headPhrase=dash(v('otherDetails'));
+      tail=' بوجود '+headPhrase+'.';
+    }else{
+      headPhrase=rt; // حالة وفاة / حريق / إصابة عامل
+      tail=' بوجود '+rt+'.';
+    }
+
+    var t='نفيد سيادتكم علماً أنه في يوم '+day+' الموافق '+date+' في تمام الساعة '+time+
+      ' تم إبلاغنا من قبل قسم العمليات '+repRank+' / '+repName+
+      ' يفيد بوجود '+headPhrase+' في منطقة '+area+
+      ' وتم توجه دورية '+dash(patrolInput.value.trim())+' '+arrival+ tail;
+
+    if(fuT.checked){
+      var fuTime=fmt(v('fuTime')||'..........');
+      var c1=dash(v('fuC1')), c2=dash(v('fuC2'));
+      t+='\n\nونفيد سيادتكم علماً أنه تمت المتابعة في تمام الساعة '+fuTime+
+         ' والاتصال على '+c1+' / '+c2+
+         ' حيث أفادنا تم عزل التسرب وتم إبلاغ قسم العمليات.';
+    }
+    document.getElementById('out').textContent=t;
+    var addr=addrInput.value.trim();
+    var greet=greetInput.value.trim();
+    var addrEl=document.getElementById('outAddr');
+    var greetEl=document.getElementById('outGreet');
+    if(addr){ addrEl.textContent=addr; addrEl.style.display='block'; } else { addrEl.style.display='none'; }
+    if(greet){ greetEl.textContent=greet; greetEl.style.display='block'; } else { greetEl.style.display='none'; }
+    var subj=v('subject');
+    var subjEl=document.getElementById('outSubj');
+    if(subj){ subjEl.textContent='الموضوع: '+subj; subjEl.style.display='block'; }
+    else { subjEl.textContent=''; subjEl.style.display='none'; }
+    return t;
+  }
+
+  // full text incl. letterhead for copy/share
+  function fullText(){
+    var head=getHeaderLines().join('\n');
+    var addr=addrInput.value.trim();
+    var greet=greetInput.value.trim();
+    var body=document.getElementById('out').textContent;
+    var subj=v('subject');
+    var out='';
+    if(head)  out += head  + '\n\n\n';
+    if(addr)  out += addr  + '\n\n';
+    if(greet) out += greet + '\n\n';
+    if(subj)  out += 'الموضوع: '+subj + '\n\n';
+    out += body;
+    return out;
+  }
+
+  // live update
+  document.querySelectorAll('input[type=text]').forEach(function(i){i.addEventListener('input',render)});
+  ['cOwner','cOwner2','cLegal','otherDetails'].forEach(function(id){document.getElementById(id).addEventListener('input',render)});
+
+  // copy
+  function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1600);}
+  document.getElementById('copyBtn').addEventListener('click',function(){
+    var txt=fullText();
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){toast('تم النسخ ✓')},function(){legacy(txt)});
+    }else legacy(txt);
+  });
+  function legacy(txt){var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity=0;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('تم النسخ ✓')}catch(e){toast('انسخ النص يدوياً')}document.body.removeChild(ta);}
+
+  // whatsapp
+  document.getElementById('waBtn').addEventListener('click',function(){
+    var url='https://wa.me/?text='+encodeURIComponent(fullText());
+    window.open(url,'_blank');
+  });
+
+  // reset
+  document.getElementById('resetBtn').addEventListener('click',function(){
+    if(!confirm('تفريغ كل الخانات؟'))return;
+    document.querySelectorAll('input[type=text]').forEach(function(i){if(['addrInput','greetInput','coInput','patrolInput'].indexOf(i.id)===-1)i.value=''});
+    ['cOwner','cOwner2','cLegal','otherDetails'].forEach(function(id){document.getElementById(id).value='';});
+    resetCableRows();
+    document.querySelectorAll('.chip.on').forEach(function(c){c.classList.remove('on')});
+    // restore report-type default: تسرب
+    document.querySelector('#reportTypeSeg .chip[data-val="تسرب"]').classList.add('on');
+    updateTypeVisibility();
+    // restore arrival default: تم مشاهدة
+    document.querySelector('#seenSeg .chip[data-val="تم"]').classList.add('on');
+    seenBox.classList.remove('hide');
+    emgBox.classList.add('hide');
+    fuT.checked=false;fuBox.classList.add('hide');
+    // restore date/time defaults
+    dayEl.value=days[now.getDay()];
+    ddEl.value=ar(now.getDate());
+    mmEl.value=ar(now.getMonth()+1);
+    yyEl.value=ar(now.getFullYear());
+    document.getElementById('time').value=ar(hh+':'+mm);
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
